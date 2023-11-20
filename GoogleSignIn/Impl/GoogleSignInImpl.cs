@@ -136,8 +136,8 @@ namespace Google.Impl {
       
       public void OnResult(int result, AndroidJavaObject acct)
       {
-        Debug.Log("googlesignin.IListener : " + acct.Call<string>("toString"));
-        Debug.Log("ID : " + acct.Call<string>("getId"));
+        Debug.Log("googlesignin.IListener : " + acct?.Call<string>("toString"));
+        Debug.Log("ID : " + acct?.Call<string>("getId"));
       }
     }
 
