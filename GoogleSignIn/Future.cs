@@ -80,5 +80,18 @@ namespace Google {
         tcs.SetException(new GoogleSignIn.SignInException(Status));
       }
     }
+
+    internal async Task WaitForResultAsync(TaskCompletionSource<T> tcs)
+    {
+      while (Pending) await Task.Yield();
+      if (Status == GoogleSignInStatusCode.CANCELED) {
+        tcs.SetCanceled();
+      } else if (Status == GoogleSignInStatusCode.SUCCESS ||
+            Status == GoogleSignInStatusCode.SUCCESS_CACHE) {
+        tcs.SetResult(Result);
+      } else {
+        tcs.SetException(new GoogleSignIn.SignInException(Status));
+      }
+    }
   }
 }
