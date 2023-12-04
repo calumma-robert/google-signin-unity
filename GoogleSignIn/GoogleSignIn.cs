@@ -123,6 +123,12 @@ namespace Google {
       return tcs.Task;
     }
 
+    public Task<GoogleSignInUser> SignInAsync() {
+      var tcs = new TaskCompletionSource<GoogleSignInUser>();
+      impl.SignIn().WaitForResultAsync(tcs);
+      return tcs.Task;
+    }
+
     /// <summary>Starts the silent authentication process.</summary>
     /// <remarks>
     /// The authenication process is started and will attempt to sign in without
@@ -133,6 +139,12 @@ namespace Google {
       var tcs = new TaskCompletionSource<GoogleSignInUser>();
       SignInHelperObject.Instance.StartCoroutine(
           impl.SignInSilently().WaitForResult(tcs));
+      return tcs.Task;
+    }
+
+    public Task<GoogleSignInUser> SignInSilentlyAsync() {
+      var tcs = new TaskCompletionSource<GoogleSignInUser>();
+      impl.SignInSilently().WaitForResultAsync(tcs);
       return tcs.Task;
     }
 
