@@ -141,10 +141,6 @@ public class GoogleSignInFragment extends Fragment implements
   }
 
   private State state;
-  
-  public boolean isPending() {
-    return state == State.PENDING || state == State.PENDING_SILENT;
-  }
 
   /**
    * The request to sign-in. This contains the configuration for the API client/Sign-in options and

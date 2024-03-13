@@ -98,6 +98,7 @@ namespace Google.Impl {
 #if UNITY_ANDROID
     static AndroidJavaClass GoogleSignInHelper = new AndroidJavaClass("com.google.googlesignin.GoogleSignInHelper");
     static AndroidJavaClass GoogleSignInFragment = new AndroidJavaClass("com.google.googlesignin.GoogleSignInFragment");
+    static readonly Dictionary<long, (int result, AndroidJavaObject acct)?> NativeResults = new Dictionary<long, (int result, AndroidJavaObject acct)?>();
     
     static AndroidJavaObject parentActivity;
     static IntPtr GoogleSignIn_Create(IntPtr activity)
@@ -143,6 +144,9 @@ namespace Google.Impl {
             Debug.Log("ID : " + acct.Call<string>("getId"));
         }
         else Debug.LogWarning("Should not get null account");
+        foreach (var key in new List<long>(NativeResults.Keys))
+          if (NativeResults.TryGetValue(key, out var value) && !value.HasValue)
+            NativeResults[key] = (result, acct);
       }
     }
 
@@ -150,25 +154,29 @@ namespace Google.Impl {
 
     static IntPtr GoogleSignIn_SignIn(HandleRef self)
     {
-      return GoogleSignInHelper.CallStatic<AndroidJavaObject>("signIn",parentActivity).GetRawObject();
+      var handle = GoogleSignInHelper.CallStatic<AndroidJavaObject>("signIn",parentActivity).GetRawObject();
+      NativeResults.Add(handle.ToInt64(),null);
+      return handle;
     }
 
     static IntPtr GoogleSignIn_SignInSilently(HandleRef self)
     {
-      return GoogleSignInHelper.CallStatic<AndroidJavaObject>("signInSilently",parentActivity).GetRawObject();
+      var handle = GoogleSignInHelper.CallStatic<AndroidJavaObject>("signInSilently",parentActivity).GetRawObject();
+      NativeResults.Add(handle.ToInt64(),null);
+      return handle;
     }
 
     static void GoogleSignIn_Signout(HandleRef self) => GoogleSignInHelper.CallStatic("signOut",parentActivity);
 
     static void GoogleSignIn_Disconnect(HandleRef self) => GoogleSignInHelper.CallStatic("disconnect",parentActivity);
 
-    internal static void GoogleSignIn_DisposeFuture(HandleRef self) => self.ToAndroidJavaObject()?.Dispose();
+    internal static void GoogleSignIn_DisposeFuture(HandleRef self) => NativeResults.Remove(self.Handle.ToInt64());
 
-    internal static bool GoogleSignIn_Pending(HandleRef self) => self.ToAndroidJavaObject()?.Call<bool>("isPending") ?? false;
+    internal static bool GoogleSignIn_Pending(HandleRef self) => NativeResults.TryGetValue(self.Handle.ToInt64(), out var result) && !result.HasValue;
 
-    internal static IntPtr GoogleSignIn_Result(HandleRef self) => self.ToAndroidJavaObject()?.Call<AndroidJavaObject>("getAccount")?.GetRawObject() ?? IntPtr.Zero;
+    internal static IntPtr GoogleSignIn_Result(HandleRef self) => NativeResults.TryGetValue(self.Handle.ToInt64(), out var result) && result.HasValue ? result.Value.acct.GetRawObject() : IntPtr.Zero;
 
-    internal static int GoogleSignIn_Status(HandleRef self) => self.ToAndroidJavaObject()?.Call<int>("getStatus") ?? 6;
+    internal static int GoogleSignIn_Status(HandleRef self) => NativeResults.TryGetValue(self.Handle.ToInt64(), out var result) && result.HasValue ? result.Value.result : 6;
     
     internal static string GoogleSignIn_GetServerAuthCode(HandleRef self) => self.ToAndroidJavaObject()?.Call<string>("getServerAuthCode");
 
