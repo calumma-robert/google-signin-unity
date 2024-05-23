@@ -553,7 +553,6 @@ public class GoogleSignInFragment extends Fragment implements
       // Cancel request.
       request.cancel();
     }
-    request = null;
     setState(getActivity() != null ? State.READY : State.NEW);
   }
 }
