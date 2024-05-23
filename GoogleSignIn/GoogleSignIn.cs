@@ -94,7 +94,7 @@ namespace Google {
 #else
           theInstance = new GoogleSignIn(null);
           throw new SignInException(
-              GoogleSignInStatusCode.DeveloperError,
+              GoogleSignInStatusCode.DEVELOPER_ERROR,
               "This platform is not supported by GoogleSignIn");
 #endif
         }
